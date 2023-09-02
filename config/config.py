@@ -7,6 +7,9 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 TWILIO_SID = os.getenv('TWILIO_SID')
 TWILIO_TOKEN = os.getenv('TWILIO_TOKEN')
 FROM = os.getenv('FROM')
+CONNECTION_STRING = os.getenv('CONNECTION_STRING')
+DATABASE_NAME = os.getenv('DATABASE_NAME')
+COLLECTION_NAME = os.getenv('COLLECTION_NAME')
 
 cwd = os.getcwd()
 
