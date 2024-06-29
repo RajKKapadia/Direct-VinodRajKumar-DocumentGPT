@@ -35,7 +35,7 @@ def get_system_template() -> str:
 - Keep an informative tone.
 
 # Answer:'''
-    instruction = "CONTEXT: {context}\n\nCHAT HISTORY:\n\n{chat_history}\n\nHUMAN: {question}\n\nAI:"
+    instruction = "CONTEXT: {context}\n\nCHAT HISTORY:\n\n{formated_chat_history}\n\nHUMAN: {question}\n\nAI:"
     template = f'{system_prompt}\n{instruction}'
     return template
 
@@ -94,6 +94,6 @@ def handle_create_conversation(formated_chat_history: list[list[str, str]], quer
         condense_query, k=5)
     formated_context = format_context(searched_docs)
     response = llm_chain.predict(
-        question=query, context=formated_context, chat_history=formated_chat_history)
+        question=query, context=formated_context, formated_chat_history=formated_chat_history)
     response = response.strip()
     return response
