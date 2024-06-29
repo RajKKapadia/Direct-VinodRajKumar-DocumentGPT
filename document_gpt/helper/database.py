@@ -41,12 +41,11 @@ def update_messages(sender_id: int, query: str, response: str, message_count: in
             }
         }
     )
-
     if not result:
         return False
     else:
         return True
-    
+
 
 def update_user(sender_id: int, update: dict) -> bool:
     '''
@@ -59,7 +58,6 @@ def update_user(sender_id: int, update: dict) -> bool:
     Returns:
         - bool, 0 for failure and 1 for success
     '''
-
     result = user_collection.find_one_and_update(
         {
             'senderId': sender_id
@@ -68,7 +66,6 @@ def update_user(sender_id: int, update: dict) -> bool:
             '$set': update
         }
     )
-
     if not result:
         return False
     else:
@@ -85,9 +82,7 @@ def create_user(user: dict) -> bool:
     Returns:
         - bool, 0 for failure and 1 for success
     '''
-
     result = user_collection.insert_one(user)
-
     return result.acknowledged
 
 
@@ -101,13 +96,11 @@ def get_user(sender_id: str) -> Any:
     Returns:
         - bool, 0 for failure and 1 for success
     '''
-
     result = user_collection.find_one(
         {
             'senderId': sender_id
         }
     )
-
     if not result:
         None
     return result

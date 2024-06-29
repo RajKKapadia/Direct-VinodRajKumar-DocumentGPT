@@ -1,11 +1,10 @@
 from datetime import datetime
-import time
+import threading
 
 from flask import Flask, request
 
-from document_gpt.helper.conversation import create_conversation
+from document_gpt.helper.conversation import format_chat_history, handle_create_conversation
 from document_gpt.helper.twilio_api import send_message
-from document_gpt.helper.utils import get_chat_history_from_mongodb, create_string_chunks
 from document_gpt.helper.database import create_user, update_messages, get_user
 
 app = Flask(__name__)
@@ -16,40 +15,59 @@ def home():
     return 'OK', 200
 
 
-@app.route('/twilio', methods=['POST'])
-def twilio():
-    query = request.form['Body']
-    sender_id = request.form['From']
-    print(sender_id, query)
+def handle_request(data: dict) -> None:
+    sender_id = data['From']
+    query = data['Body']
+    user_name = data['ProfileName']
     user = get_user(sender_id)
+    print(user)
+    # create chat_history from the previous conversations
     if user:
-        chat_history = get_chat_history_from_mongodb(user['messages'][-2:])
-        response = create_conversation(query, chat_history)
-        update_messages(sender_id, query,
-                        response, user['messageCount'])
-        sentences = create_string_chunks(response, 1500)
-        for s in sentences:
-            send_message(sender_id, s)
-            time.sleep(1.0)
+        messages = format_chat_history(user['messages'][-3:])
     else:
-        response = create_conversation(query, [])
+        messages = format_chat_history([])
+    print(query)
+    print(sender_id)
+    print(messages)
+    response = handle_create_conversation(messages, query)
+    print(response)
+    send_message(sender_id, response)
+    if user:
+        update_messages(sender_id, query, response,
+                        user['messageCount'])
+    else:
+        # if not create
         message = {
             'query': query,
             'response': response,
             'createdAt': datetime.now().strftime('%d/%m/%Y, %H:%M')
         }
         user = {
-            'userName': '',
+            'userName': user_name,
             'senderId': sender_id,
             'messages': [message],
             'messageCount': 1,
-            'mobile': '',
-            'email': '',
+            'mobile': sender_id.split(':')[-1],
             'channel': 'WhatsApp',
-            'created_at': datetime.now().strftime('%d/%m/%Y, %H:%M'),
-            'status': 'inactive'
+            'is_paid': False,
+            'created_at': datetime.now().strftime('%d/%m/%Y, %H:%M')
         }
         create_user(user)
-        send_message(sender_id, response)
 
-    return 'OK', 200
+
+@app.route('/twilio', methods=['POST'])
+def handle_twilio_webhook():
+    try:
+        print('A new twilio request...')
+        data = request.form.to_dict()
+        print(data)
+        # Create a new thread to handle the time consuming request
+        threading.Thread(
+            target=handle_request,
+            args=[data]
+        ).start()
+        print('Request success.')
+    except:
+        print('Request failed.')
+    finally:
+        return 'OK', 200
