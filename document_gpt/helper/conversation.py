@@ -15,7 +15,6 @@ def format_context(documents: list[Document]) -> str:
 
 
 def format_chat_history(chat_history: list[list[str, str]]) -> str:
-    chat_history = chat_history[:-1]
     formated_chat_history = ''
     for ch in chat_history:
         print(ch)
