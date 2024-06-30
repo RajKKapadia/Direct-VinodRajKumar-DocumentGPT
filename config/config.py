@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from openai import OpenAI
+from qdrant_client import QdrantClient
 
 load_dotenv(find_dotenv())
 
@@ -17,20 +18,18 @@ CONNECTION_STRING = os.getenv('CONNECTION_STRING')
 DATABASE_NAME = os.getenv('DATABASE_NAME')
 COLLECTION_NAME = os.getenv('COLLECTION_NAME')
 
-cwd = os.getcwd()
+QDRANT_URL = os.getenv('QDRANT_URL')
+# In case using the Cloud Instance you need this
+# QDRANT_API_KEY = os.getenv('QDRANT_API_KEY')
+COLLECTION_NAME = 'my_collection'
 
-DB_DIR = os.path.join(
-    cwd,
-    'data',
-    'db'
-)
-os.makedirs(DB_DIR, exist_ok=True)
+cwd = os.getcwd()
 
 OUTPUT_DIR = os.path.join(
     cwd,
-    'data',
     'output'
 )
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 embeddings = OpenAIEmbeddings(
@@ -46,4 +45,10 @@ chat_model = ChatOpenAI(
 
 openai_client = OpenAI(
     api_key=OPENAI_API_KEY
+)
+
+
+qdrant_client = QdrantClient(
+    url=QDRANT_URL, https=True,
+    # api_key=QDRANT_API_KEY
 )

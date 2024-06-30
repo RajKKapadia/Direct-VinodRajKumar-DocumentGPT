@@ -1,4 +1,4 @@
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import Qdrant
 from langchain.chains.llm import LLMChain
 from langchain.schema.document import Document
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate
@@ -73,11 +73,8 @@ rephrase the FOLLOW UP QUESTION to be a STANDALONE QUESTION in its original lang
 
 
 def handle_create_conversation(formated_chat_history: list[list[str, str]], query: str) -> str:
-    persist_directory = config.DB_DIR
-    vector_db = Chroma(
-        persist_directory=persist_directory,
-        embedding_function=config.embeddings
-    )
+    vector_db = vector_db = Qdrant(client=config.qdrant_client, embeddings=config.embeddings,
+                                   collection_name=config.COLLECTION_NAME)
     template = get_system_template()
     prompt = ChatPromptTemplate.from_messages(
         [
